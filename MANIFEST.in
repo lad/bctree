@@ -1,0 +1,5 @@
+include MANIFEST.in
+recursive-include bctree *
+exclude .gitignore
+exclude pylintrc
+global-exclude *pyc

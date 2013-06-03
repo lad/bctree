@@ -1,0 +1,10 @@
+build
+dist
+*.egg-info
+*.pyc
+.pip_cache
+dev/venv
+log
+trace
+trace.txt
+tags
