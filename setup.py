@@ -9,7 +9,6 @@ __url__ = 'http://pypi.python.org/pypi/bctree/'
 __description__ = 'Basic Tree Implementation'
 __long_description__ = __description__
 
-__install_requires__ = []
 __scripts__ = []
 
 
@@ -34,7 +33,6 @@ def run():
             'Programming Language :: Python :: 2.7',
         ],
         scripts=__scripts__,
-        install_requires=__install_requires__,
         url=__url__
     )
 
