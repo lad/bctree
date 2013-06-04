@@ -5,8 +5,6 @@ MODULE=bctree
 # environments. If you do, be careful of the clean command which deletes the
 # virtual environment.
 VIRTUAL_ENV=/tmp/$(MODULE)-dev
-PIP_DOWNLOAD_CACHE ?= $(PWD)/.pip_cache
-PIP = $(VIRTUAL_ENV)/bin/pip install --download-cache $(PIP_DOWNLOAD_CACHE) --use-mirrors
 PYTHON = $(VIRTUAL_ENV)/bin/python
 SED=sed
 PYLINT=pylint
@@ -23,7 +21,6 @@ $(VIRTUAL_ENV):
 	virtualenv $(VIRTUAL_ENV)
 
 build: virtualenv
-	$(PIP) -r requirements.txt
 	$(PYTHON) setup.py develop
 
 sdist: virtualenv
@@ -42,7 +39,6 @@ clean:
 	rm -rf $(VIRTUAL_ENV) build dist *.egg-info log
 
 dist-clean: clean
-	rm -rf $(PIP_DOWNLOAD_CACHE)
 
 tests: build
 	$(PYTHON) -m unittest discover -v -s $(MODULE)/tests
