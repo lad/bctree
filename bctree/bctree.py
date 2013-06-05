@@ -53,64 +53,107 @@ class BcTree(object):
     # pylint: disable-msg=W0212
     def get_from(self, values):
         """Get the node using the given value list."""
-        if values[0] != self.value:
-            return None
+        return self._get_from(values)[1]
 
-        cur = self
+    def _get_from(self, values):
+        """Get the parent and the node using the given value list."""
+        if values[0] != self.value:
+            return None, None
+        elif len(values) == 1:
+            return None, self
+
+        child = self
         for value in values[1:]:
-            for child in cur._children:
+            parent = child
+            for child in parent._children:
                 if child.value == value:
-                    cur = child
                     break
             else:
-                return None
-        return cur
+                return None, None
+
+        return parent, child
 
     def extend(self, tree):
         """Add the given tree as an immediate child."""
         self._children.append(tree)
         return tree
 
-    def move(self, dst_value, src_value):
+    def move(self, dst_value, src_value, order=DFS):
+        """Move a node and its decendents.
+
+           The source and destination nodes are identified by their values
+           only. A find operation is performed for both using the given
+           order."""
         if src_value == self.value:
             raise ValueError('Moving the root of the tree is not supported.')
 
-        dst_node = self.find(dst_value)
-        if not dst_node:
+        dst_parent = self.find(dst_value, order=order)
+        if not dst_parent:
             raise ValueError('Source value "{}" not found in tree.'
                              .format(src_value))
 
-        for parent, child in self._iterate(root=False):
-            if child.value == src_value:
-                break
-        else:
+        src_parent, src = self._find(src_value, order=order)
+        if not src_parent or not src:
             raise ValueError('Source value "{}" not found in tree.'
                              .format(src_value))
+
+    def move_from(self, dst_parent_values, src_values):
+        """Move a node and its decendents.
+
+        The source and destination nodes are identified by a "path" of
+        values from the root node to the desired node."""
+        dst = self.get_from(dst_parent_values)
+        if not dst:
+            raise ValueError('Destination values ( {} ) not found in tree.'
+                             .format(dst_parent_values))
+
+        src_parent, src = self._get_from(src_values)
+        if not src_parent or not src:
+            raise ValueError('Source values ( {} ) not found in tree.'
+                             .format(src_values))
+
+        src_parent._children.remove(src)
+        dst._children.add(src)
+
+    def remove(self, value):
+        """Remove the given value from the tree."""
+        parent, child = self._find(value, self.DFS)
+        if not parent or not child:
+            raise ValueError('Value "{}" not found in tree.'.format(value))
 
         parent._children.remove(child)
-        dst_node._children.append(child)
+        return child
 
-    def remove(self):
-        pass
+    def remove_from(self, values):
+        """Remove a value from the tree using a "path" of values."""
+        parent, child = self._get_from
+        if not parent or not child:
+            raise ValueError('Values ( {} ) not found in tree.'
+                             .format(values))
+        parent._children.remove(child)
 
     def find(self, value, order=DFS):
         """Find the given value in the tree using the given order."""
+        return self._find(value, order=order)[1]
+
+    def _find(self, value, order):
+        """Return parent and child for a matching child value."""
         if self.value == value:
-            return self
-        for tree in self.iterate(root=False, order=order):
-            if tree.value == value:
-                return tree
-        return None
+            return None, self
+        for parent, child in self._iterate(root=False, order=order):
+            if child.value == value:
+                return parent, child
+        return None, None
 
     def __iter__(self):
         """Iterate through the tree, depth first."""
-        for _, child in self._iterate():
-            yield child
+        for _, tree in self._iterate():
+            yield tree
 
     def iterate(self, root=True, order=DFS):
         """Iterate through the tree in the given order."""
-        for _, child in self._iterate(root=root, order=order):
-            yield child
+        for _, tree in self._iterate(root=root, order=order):
+            yield tree
 
     def _iterate(self, root=True, order=DFS):
         """Iterate through the tree yielding a tuple of (parent, child)"""
