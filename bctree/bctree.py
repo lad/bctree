@@ -71,8 +71,24 @@ class BcTree(object):
         self._children.append(tree)
         return tree
 
-    def move(self):
-        pass
+    def move(self, dst_value, src_value):
+        if src_value == self.value:
+            raise ValueError('Moving the root of the tree is not supported.')
+
+        dst_node = self.find(dst_value)
+        if not dst_node:
+            raise ValueError('Source value "{}" not found in tree.'
+                             .format(src_value))
+
+        for parent, child in self._iterate(root=False):
+            if child.value == src_value:
+                break
+        else:
+            raise ValueError('Source value "{}" not found in tree.'
+                             .format(src_value))
+
+        parent._children.remove(child)
+        dst_node._children.append(child)
 
     def remove(self):
         pass
@@ -88,15 +104,20 @@ class BcTree(object):
 
     def __iter__(self):
         """Iterate through the tree, depth first."""
-        for child in self.iterate():
+        for _, child in self._iterate():
             yield child
 
     def iterate(self, root=True, order=DFS):
         """Iterate through the tree in the given order."""
-        if root:
-            yield self
+        for _, child in self._iterate(root=root, order=order):
+            yield child
 
-        to_visit = deque(self._children)
+    def _iterate(self, root=True, order=DFS):
+        """Iterate through the tree yielding a tuple of (parent, child)"""
+        if root:
+            yield None, self
+
+        to_visit = deque([(self, c) for c in self._children])
         if order == self.BFS:
             add_to_visit = to_visit.extend
         elif order == self.DFS:
@@ -105,6 +126,6 @@ class BcTree(object):
             raise ValueError('Invalid "order" argument')
 
         while to_visit:
-            current = to_visit.popleft()
-            yield current
-            add_to_visit(current._children)
+            parent, current = to_visit.popleft()
+            yield parent, current
+            add_to_visit([(current, c) for c in current._children])

@@ -61,8 +61,16 @@ class TestBcTree(object):
         self.assertTrue(self.tree.find('one').value is entry)
 
     def test_extend(self):
-        tree2 = self.make_tree()
-        self.tree.extend(tree2)
+        tree2 = BcTree(1)
+        tree2.add(2)
+        tree2.add(3).add(3.3)
+        child = self.tree.get_from(self.add_path)
+
+        expected = [l.value for l in child._children] + [l.value for l in tree2]
+
+        child.extend(tree2)
+        self.assertTrue([e.value for e in child.iterate(root=False)] ==
+                        expected)
 
     def test_eq_root(self):
         root = BcTree(self.tree.value)
@@ -81,7 +89,7 @@ class TestBcTree(object):
             self.assertTrue(self.tree.find(value) == BcTree(value))
 
     def test_find_none(self):
-        self.assertTrue(self.tree.find(str(random.random())) == None)
+        self.assertTrue(self.tree.find(str(random.random())) is None)
 
     def test_iter(self):
         expected = [BcTree(value) for value in self.dfs_values]
