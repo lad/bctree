@@ -1,0 +1,71 @@
+{
+  "root_only_none": {"root": null,
+                    "add_values": [],
+                    "dfs": [null],
+                    "bfs": [null],
+                    "add_path": [null] },
+
+  "root_only_value": {"root": "root-value",
+                      "add_values": [],
+                      "dfs": ["root-value"],
+                      "bfs": ["root-value"],
+                      "add_path": ["root-value"] },
+
+  "single": {"root": "root",
+             "add_values":
+                    [
+                        "root", ["a", "b", "c", "d"]
+                    ],
+             "dfs": ["root", "a", "b", "c", "d"],
+             "bfs": ["root", "a", "b", "c", "d"],
+             "add_path": ["root", "b"] },
+
+  "two_levels": {"root": "root",
+                 "add_values":
+                        [
+                            "root", ["a", "b", "c"],
+                            "a", ["a.1"],
+                            "b", ["b.1", "b.2"]
+                        ],
+                 "dfs": ["root", "a", "a.1", "b", "b.1", "b.2", "c"],
+                 "bfs": ["root", "a", "b", "c", "a.1", "b.1", "b.2"],
+                 "add_path": ["root", "a", "a.1"] },
+
+  "three_levels": {"root": "rootval",
+                   "add_values":
+                          [
+                              "rootval", ["a", "b", "c"],
+                              "a", ["a.1", "a.2"],
+                              "b", ["b.1", "b.2", "b.3"],
+                              "c", ["c.1"]
+                          ],
+                   "dfs": ["rootval", "a", "a.1", "a.2", "b", "b.1", "b.2",
+                           "b.3", "c", "c.1"],
+                   "bfs": ["rootval", "a", "b", "c", "a.1", "a.2", "b.1",
+                           "b.2", "b.3", "c.1"],
+                   "add_path": ["rootval", "a", "a.1"] },
+
+  "four_levels": {"root": "rootval",
+                   "add_values":
+                          [
+                              "rootval", ["a", "b", "c", "d", "e", "f", "g"],
+                              "a", ["a.1", "a.2", "a.3"],
+                              "a.1", ["a.1.1", "a.1.2"],
+                              "a.2", ["a.2.1", "a.2.2"],
+                              "a.3", ["a.3.1", "a.3.2"],
+                              "b", ["b.1", "b.2", "b.3"],
+                              "b.1", ["b.1.1", "b.1.2", "b.1.3"],
+                              "c", ["c.1"],
+                              "c.1", ["c.1.1"]
+                          ],
+                   "dfs": ["rootval", "a", "a.1", "a.1.1", "a.1.2", "a.2",
+                           "a.2.1", "a.2.2", "a.3", "a.3.1", "a.3.2", "b",
+                           "b.1", "b.1.1", "b.1.2", "b.1.3", "b.2", "b.3",
+                           "c", "c.1", "c.1.1", "d", "e", "f", "g"],
+                   "bfs": ["rootval", "a", "b", "c", "d", "e", "f", "g", "a.1",
+                           "a.2", "a.3", "b.1", "b.2", "b.3", "c.1", "a.1.1",
+                           "a.1.2", "a.2.1", "a.2.2", "a.3.1", "a.3.2",
+                           "b.1.1", "b.1.2", "b.1.3", "c.1.1"],
+                   "add_path": ["rootval", "a", "a.1"] }
+
+}

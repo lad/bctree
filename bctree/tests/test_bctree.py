@@ -2,7 +2,8 @@
 
 """Some quick tests for BcTree using unittest.
 
-There are classes created dynamically to support parameterizing the tests.
+Test classes are created dynamically to support parameterizing the
+tests, see load_tests.
 """
 
 from bctree import BcTree
@@ -10,6 +11,8 @@ from bctree import BcTree
 import random
 import unittest
 from functools import partial
+import os
+import json
 
 
 class TestBcTree(object):
@@ -43,6 +46,10 @@ class TestBcTree(object):
         self.tree.add_to(self.add_path, value)
         self.assertTrue(self.tree.find(value) == BcTree(value))
 
+    def test_get_from(self):
+        child = self.tree.get_from(self.add_path)
+        self.assertTrue(child.value == self.add_path[-1])
+
     def test_add_child_entry(self):
         entry = self.Entry('one', 1, 2)
         self.tree.add(entry)
@@ -53,9 +60,21 @@ class TestBcTree(object):
         self.tree.add_to(self.add_path, entry)
         self.assertTrue(self.tree.find('one').value is entry)
 
-    def test_eq(self):
+    def test_extend(self):
         tree2 = self.make_tree()
-        self.assertTrue(self.tree == tree2)
+        self.tree.extend(tree2)
+
+    def test_eq_root(self):
+        root = BcTree(self.tree.value)
+        self.assertTrue(self.tree == root)
+
+    def test_eq_child(self):
+        if not self.dfs_values or len(self.dfs_values) < 2:
+            return
+
+        value = self.dfs_values[1]
+        child = self.tree.get(value)
+        self.assertTrue(child == BcTree(value))
 
     def test_find(self):
         for value in self.iter_values():
@@ -89,8 +108,11 @@ class TestBcTree(object):
 
 
 def make_tree(root, parents_values):
+    """Make a test with the given root and values."""
     tree = BcTree(root)
-    for parent, values in parents_values:
+    for i in range(0, len(parents_values), 2):
+        parent = parents_values[i]
+        values = parents_values[i + 1]
         node = tree.find(parent)
         for value in values:
             node.add(value)
@@ -98,6 +120,7 @@ def make_tree(root, parents_values):
 
 
 def iter_values(root, values):
+    """Yield the root and all values."""
     yield root
     for value in values:
         yield value
@@ -109,58 +132,18 @@ def parametrized_test_classes():
     Different test parameters are setup as class data in each test
     class, effectively running the same tests with differing data.
     """
-    params = (('root_only_none',            # name
-                    None,                   # root value
-                    (),                     # parents/values to add
-                    [None],                 # Depth first search list
-                    [None],                 # Breadth first search list
-                    [None]),                # Path to add to
-               ('root_only_value',
-                   'root-value',
-                   (),
-                   ['root-value'],
-                   ['root-value'],
-                   ['root-value']),
-               ('single',
-                    'rootval',
-                    (('rootval', ['a']),),
-                    ['rootval', 'a'],
-                    ['rootval', 'a'],
-                    ['rootval', 'a']),
-               ('onelevel',
-                    None,
-                    ((None, ['a', 'b', 'c', 'd']),),
-                    [None, 'a', 'b', 'c', 'd'],
-                    [None, 'a', 'b', 'c', 'd'],
-                    [None, 'b']),
-              ('twolevel',
-                    'root',
-                    (('root', ['a', 'b', 'c']),
-                     ('a', ['a.1']),
-                     ('b', ['b.1'])),
-                    ['root', 'a', 'a.1', 'b', 'b.1', 'c'],
-                    ['root', 'a', 'b', 'c', 'a.1', 'b.1'],
-                    ['root', 'a', 'a.1']),
-              ('threelevel',
-                    'root',
-                    (('root', ['a', 'b', 'c']),
-                     ('a', ['a.1', 'a.2']),
-                     ('b', ['b.1', 'b.2', 'b.3']),
-                     ('b.2', ['b.2.1', 'b.2.2']),
-                     ('b.3', ['b.3.1', 'b.3.2'])),
-                    ['root', 'a', 'a.1', 'a.2', 'b', 'b.1', 'b.2', 'b.2.1',
-                      'b.2.2', 'b.3', 'b.3.1', 'b.3.2', 'c'],
-                    ['root', 'a', 'b', 'c', 'a.1', 'a.2', 'b.1', 'b.2', 'b.3',
-                      'b.2.1', 'b.2.2', 'b.3.1', 'b.3.2'],
-                    ['root', 'b', 'b.3', 'b.3.1']))
-    for name, root, values, dfs, bfs, add_path in params:
-        yield type('{}.TestBcTree'.format(name),
-                   (TestBcTree, unittest.TestCase),
-                   {'make_tree': partial(make_tree, root, values),
-                    'iter_values': partial(iter_values, root, dfs),
-                    'dfs_values': dfs,
-                    'bfs_values': bfs,
-                    'add_path': add_path})
+    with open(os.path.join(os.path.dirname(__file__), 'input.json')) as fd:
+        testdict = json.load(fd)
+        for name, value in testdict.iteritems():
+            yield type('{}.TestBcTree'.format(name),
+                       (TestBcTree, unittest.TestCase),
+                       {'make_tree': partial(make_tree, value['root'],
+                                             value['add_values']),
+                       'iter_values': partial(iter_values, value['root'],
+                                              value['dfs']),
+                       'dfs_values': value['dfs'],
+                       'bfs_values': value['bfs'],
+                       'add_path': value['add_path']})
 
 
 def load_tests(loader, tests, pattern):
