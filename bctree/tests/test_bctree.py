@@ -81,10 +81,23 @@ class TestBcTree(object):
     def test_move(self):
         if not self.add_path or len(self.add_path) < 3:
             return
+
         src = self.add_path[2]
         self.tree.move(self.tree.value, src)
         parent, child = self.tree._find(src, BcTree.DFS)
         self.assertTrue(parent == self.tree and child.value == src)
+
+    def test_move_no_root(self):
+        self.assertRaises(ValueError, self.tree.move, self.tree,
+                          self.tree.value)
+
+    def test_move_no_dest(self):
+        self.assertRaises(ValueError, self.tree.move, str(random.random()),
+                          self.tree)
+
+    def test_move_no_src(self):
+        self.assertRaises(ValueError, self.tree.move, self.tree,
+                          str(random.random()))
 
     def test_remove(self):
         if len(self.add_path) < 2:
