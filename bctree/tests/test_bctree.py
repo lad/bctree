@@ -72,11 +72,10 @@ class TestBcTree(object):
         tree2.add(3).add(3.3)
         child = self.tree.get_from(self.add_path)
 
-        expected = [l.value for l in child._children] + [l.value for l in tree2]
+        expected = [l.value for l in child] + [l.value for l in tree2]
 
         child.extend(tree2)
-        self.assertTrue([e.value for e in child.iterate(root=False)] ==
-                        expected)
+        self.assertTrue([e.value for e in child.iterate()] == expected)
 
     def test_move(self):
         if not self.add_path or len(self.add_path) < 3:
