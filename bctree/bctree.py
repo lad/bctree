@@ -5,6 +5,9 @@
 from collections import deque
 
 
+# pylint: disable-msg=W0212
+# pylint can't figure out that we're accessing a protected member of our own
+# class.
 class BcTree(object):
     """Unsorted Native Python Tree."""
 
@@ -35,9 +38,6 @@ class BcTree(object):
                 return child
         return None
 
-    # pylint: disable-msg=W0212
-    # pylint can't figure out that we're accessing a protected member
-    # of our own class.
     def add_to(self, parent_values, value):
         """Add a value using a list of values as a "path" to the parent node.
 
@@ -50,7 +50,6 @@ class BcTree(object):
         else:
             return None
 
-    # pylint: disable-msg=W0212
     def get_from(self, values):
         """Get the node using the given value list."""
         return self._get_from(values)[1]
@@ -87,8 +86,8 @@ class BcTree(object):
         if src_value == self.value:
             raise ValueError('Moving the root of the tree is not supported.')
 
-        dst_parent = self.find(dst_value, order=order)
-        if not dst_parent:
+        dst = self.find(dst_value, order=order)
+        if not dst:
             raise ValueError('Source value "{}" not found in tree.'
                              .format(src_value))
 
@@ -97,6 +96,9 @@ class BcTree(object):
             raise ValueError('Source value "{}" not found in tree.'
                              .format(src_value))
 
+        src_parent._children.remove(src)
+        dst._children.append(src)
+
     def move_from(self, dst_parent_values, src_values):
         """Move a node and its decendents.
 
@@ -104,16 +106,16 @@ class BcTree(object):
         values from the root node to the desired node."""
         dst = self.get_from(dst_parent_values)
         if not dst:
-            raise ValueError('Destination values ( {} ) not found in tree.'
+            raise ValueError('Destination values ({}) not found in tree.'
                              .format(dst_parent_values))
 
         src_parent, src = self._get_from(src_values)
         if not src_parent or not src:
-            raise ValueError('Source values ( {} ) not found in tree.'
+            raise ValueError('Source values ({}) not found in tree.'
                              .format(src_values))
 
         src_parent._children.remove(src)
-        dst._children.add(src)
+        dst._children.append(src)
 
     def remove(self, value):
         """Remove the given value from the tree."""
@@ -126,9 +128,9 @@ class BcTree(object):
 
     def remove_from(self, values):
         """Remove a value from the tree using a "path" of values."""
-        parent, child = self._get_from
+        parent, child = self._get_from(values)
         if not parent or not child:
-            raise ValueError('Values ( {} ) not found in tree.'
+            raise ValueError('Values ({}) not found in tree.'
                              .format(values))
         parent._children.remove(child)
 

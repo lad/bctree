@@ -50,6 +50,12 @@ class TestBcTree(object):
         child = self.tree.get_from(self.add_path)
         self.assertTrue(child.value == self.add_path[-1])
 
+    def test_get_from_none(self):
+        path = self.add_path[:]
+        path[-1] = str(random.random())
+        child = self.tree.get_from(path)
+        self.assertTrue(child == None)
+
     def test_add_child_entry(self):
         entry = self.Entry('one', 1, 2)
         self.tree.add(entry)
@@ -72,14 +78,49 @@ class TestBcTree(object):
         self.assertTrue([e.value for e in child.iterate(root=False)] ==
                         expected)
 
+    def test_move(self):
+        if not self.add_path or len(self.add_path) < 3:
+            return
+        src = self.add_path[2]
+        self.tree.move(self.tree.value, src)
+        parent, child = self.tree._find(src, BcTree.DFS)
+        self.assertTrue(parent == self.tree and child.value == src)
+
+    def test_remove(self):
+        if len(self.add_path) < 2:
+            return
+
+        val = self.add_path[1]
+        self.tree.remove(val)
+        self.assertTrue(self.tree.find(val) is None)
+
+    def test_remove_all(self):
+        for parent, child in self.tree._iterate(root=False, order=BcTree.BFS):
+            if parent == self.tree:
+                self.tree.remove(child.value)
+
+        self.assertTrue(list(self.tree) == [self.tree])
+
+    def test_remove_from(self):
+        if len(self.add_path) < 2:
+            return
+        self.tree.remove_from(self.add_path)
+        self.assertTrue(self.tree.find(self.add_path[-1]) is None)
+
+    def test_remove_root(self):
+        self.assertRaises(ValueError, self.tree.remove, self.tree.value)
+
     def test_eq_root(self):
         root = BcTree(self.tree.value)
         self.assertTrue(self.tree == root)
 
+    def test_eq_not_root(self):
+        node = BcTree(str(random.random()))
+        self.assertTrue(self.tree != node)
+
     def test_eq_child(self):
         if not self.dfs_values or len(self.dfs_values) < 2:
             return
-
         value = self.dfs_values[1]
         child = self.tree.get(value)
         self.assertTrue(child == BcTree(value))
